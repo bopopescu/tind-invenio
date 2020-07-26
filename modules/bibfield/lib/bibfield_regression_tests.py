@@ -101,7 +101,7 @@ class BibFieldCreateRecordTests(InvenioTestCase):
         f = open(CFG_TMPDIR + '/demobibdata.xml', 'r')
         blob = f.read()
         f.close()
-        self.recs = [rec for rec in create_records(blob, master_format='marc', schema='xml')]
+        self.recs = [rec for rec in create_records(blob, main_format='marc', schema='xml')]
 
     def test_records_created(self):
         """ BibField - demo file how many records are created """
@@ -119,14 +119,14 @@ class BibFieldCreateRecordTests(InvenioTestCase):
         </record>
         </collection>
         """
-        record = create_record(blob, master_format='marc', schema='xml')
-        record1 = create_records(blob, master_format='marc', schema='xml')[0]
+        record = create_record(blob, main_format='marc', schema='xml')
+        record1 = create_records(blob, main_format='marc', schema='xml')[0]
         self.assertEqual(record1.keys(), record.keys())
 
     # def test_empty_collection(self):
     #     """bibfield - empty collection"""
     #     blob_error0 = """<collection></collection>"""
-    #     rec = create_record(blob_error0, master_format='marc', schema='xml')
+    #     rec = create_record(blob_error0, main_format='marc', schema='xml')
     #     self.assertTrue(rec.is_empty())
     #     records = create_records(blob_error0)
     #     self.assertEqual(len(records), 0)
@@ -225,7 +225,7 @@ class BibFieldCreateRecordTests(InvenioTestCase):
                   <subfield code="a">PICTURE</subfield>
                 </datafield>
               </record>"""
-        rec = create_record(marc_blob, master_format='marc', schema='xml')
+        rec = create_record(marc_blob, main_format='marc', schema='xml')
         self.assertTrue('fft' in rec)
         self.assertTrue(len(rec['fft']) == 1)
         self.assertTrue(rec['fft[0].path'] == "http://invenio-software.org/download/invenio-demo-site-files/6206002.jpg")

@@ -108,7 +108,7 @@ class SmartJson(SmartDict):
             self._dict_bson[key] = value
         else:
             from invenio.bibfield import CFG_BIBFIELD_READERS as readers
-            reader = readers['bibfield_%sreader.py' % (self['__meta_metadata__']['__additional_info__']['master_format'], )]()
+            reader = readers['bibfield_%sreader.py' % (self['__meta_metadata__']['__additional_info__']['main_format'], )]()
             reader.set(self, main_key)
             self._dict_bson[key] = value
 
@@ -154,7 +154,7 @@ class SmartJson(SmartDict):
         def check_rules(checker_functions, key):
             """docstring for check_rule"""
             for checker_function in checker_functions:
-                if 'all' in checker_function[0] or self['__meta_metadata__.__additional_info__.master_format'] in checker_function[0]:
+                if 'all' in checker_function[0] or self['__meta_metadata__.__additional_info__.main_format'] in checker_function[0]:
                     try:
                         try_to_eval("%s(self,'%s',%s)" % (checker_function[1], key, checker_function[2]))
                     except InvenioBibFieldContinuableError, err:

@@ -79,7 +79,7 @@ class Reader(object):
         It transforms the incoming blob into a json structure using the rules
         described into the field and model definitions.
         To apply this rules it takes into account the type of the reader, which
-        in fact means the type of the source format or `master_format`
+        in fact means the type of the source format or `main_format`
 
         :return: Json structure (typically a dictionary)
         """
@@ -166,8 +166,8 @@ class Reader(object):
                     .append("Adding a new field '%s' without definition" % (field))
 
         try:
-            if self.json['__meta_metadata__']['__additional_info__']['master_format'] in rule['rules']:
-                rule_def = rule['rules'][self.json['__meta_metadata__']['__additional_info__']['master_format']][0]
+            if self.json['__meta_metadata__']['__additional_info__']['main_format'] in rule['rules']:
+                rule_def = rule['rules'][self.json['__meta_metadata__']['__additional_info__']['main_format']][0]
                 rule_type = 'creator'
             elif 'derived' in rule['rules']:
                 rule_def = rule['rules']['derived'][0]
@@ -275,7 +275,7 @@ class Reader(object):
         """Tries to apply a 'creator' rule"""
         applied = False
         for rule in rule_def['rules'].get(
-                self.json['__meta_metadata__']['__additional_info__']['master_format'], []):
+                self.json['__meta_metadata__']['__additional_info__']['main_format'], []):
             elements = self._get_elements_from_blob(rule['source_tag'])
             if not elements:
                 self._set_default_value(json_id, field_name)
@@ -303,8 +303,8 @@ class Reader(object):
                         element = (element, )
                     applied = False
                     for e in element:
-                        if rule['only_if_master_value'] and \
-                           not all(try_to_eval(rule['only_if_master_value'], self.functions, value=e, self=self.json)):
+                        if rule['only_if_main_value'] and \
+                           not all(try_to_eval(rule['only_if_main_value'], self.functions, value=e, self=self.json)):
                             applied = applied or False
                         else:
                             try:

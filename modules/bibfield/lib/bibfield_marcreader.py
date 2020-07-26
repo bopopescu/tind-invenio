@@ -31,7 +31,7 @@ from invenio.bibfield_reader import Reader, ReaderException
 class MarcReader(Reader):
     """Marc reader"""
 
-    __master_format__ = 'marc'
+    __main_format__ = 'marc'
 
     split_marc = re.compile('<record.*?>.*?</record>', re.DOTALL)
 
@@ -40,7 +40,7 @@ class MarcReader(Reader):
         :param blob:
         """
         super(MarcReader, self).__init__(blob=blob, **kwargs)
-        self._additional_info['master_format'] = 'marc'
+        self._additional_info['main_format'] = 'marc'
 
     @staticmethod
     def split_blob(blob, schema=None, **kwargs):

@@ -452,7 +452,7 @@ class BibFieldMarcReaderMarcXML(InvenioTestCase):
         reader = MarcReader(blob=xml, schema="xml")
         r = Record(reader.translate())
 
-        self.assertTrue(r['__meta_metadata__.__additional_info__.master_format'] == 'marc')
+        self.assertTrue(r['__meta_metadata__.__additional_info__.main_format'] == 'marc')
         self.assertTrue('authors' in r)
         self.assertTrue(r['authors[0].full_name'] == "Efstathiou, G P")
         self.assertTrue(len(r['authors']) == 5)

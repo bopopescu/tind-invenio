@@ -59,14 +59,14 @@ def _create_field_parser():
     calculated ::= "calculated:" INDENT derived_calculated_body UNDENT
     derived_calculated_body ::= [decorators] "," python_allowed_exp
 
-    decorators ::= (peristent_identfier | legacy | do_not_cache | parse_first | depends_on | only_if | only_if_master_value)*
+    decorators ::= (peristent_identfier | legacy | do_not_cache | parse_first | depends_on | only_if | only_if_main_value)*
     peristent_identfier ::= @persitent_identifier( level )
     legacy ::= "@legacy(" correspondences+ ")"
     correspondences ::= "(" source_tag [ "," tag_name ] "," json_id ")"
     parse_first ::= "@parse_first(" jsonid+ ")"
     depends_on ::= "@depends_on(" json_id+ ")"
     only_if ::= "@only_if(" python_condition+ ")"
-    only_if_master_value ::= "@only_if_master_value(" python_condition+  ")"
+    only_if_main_value ::= "@only_if_main_value(" python_condition+  ")"
 
     inherit_from ::= "@inherit_from()"
 
@@ -129,9 +129,9 @@ def _create_field_parser():
             .setResultsName("legacy", listAllMatches=True)
     only_if = (Suppress("@only_if") + originalTextFor(nestedExpr("(", ")")))\
             .setResultsName("only_if")
-    only_if_master_value = (Suppress("@only_if_value") + \
+    only_if_main_value = (Suppress("@only_if_value") + \
             originalTextFor(nestedExpr("(", ")")))\
-            .setResultsName("only_if_master_value")
+            .setResultsName("only_if_main_value")
     depends_on = (Suppress("@depends_on") + \
             originalTextFor(nestedExpr("(", ")")))\
             .setResultsName("depends_on")
@@ -141,7 +141,7 @@ def _create_field_parser():
     memoize = (Suppress("@memoize") + nestedExpr("(", ")"))\
             .setResultsName("memoize")
     field_decorator = parse_first ^ depends_on ^ only_if ^ \
-            only_if_master_value ^ memoize ^ legacy
+            only_if_main_value ^ memoize ^ legacy
 
     #Independent decorators
     inherit_from = (Suppress("@inherit_from") + \
@@ -151,9 +151,9 @@ def _create_field_parser():
             .setResultsName("override")
     extend = (Suppress("@") + "extend")\
             .setResultsName("extend")
-    master_format = (Suppress("@master_format") + \
+    main_format = (Suppress("@main_format") + \
             originalTextFor(nestedExpr("(", ")")))\
-            .setResultsName("master_format") \
+            .setResultsName("main_format") \
             .setParseAction(lambda toks: toks[0])
 
     derived_calculated_body = (ZeroOrMore(field_decorator) + python_allowed_expr)\
@@ -190,7 +190,7 @@ def _create_field_parser():
             .setResultsName('json_ext')
 
     #Checker
-    checker_function = (Optional(master_format) + ZeroOrMore(ident + ".") + ident + originalTextFor(nestedExpr('(', ')')))\
+    checker_function = (Optional(main_format) + ZeroOrMore(ident + ".") + ident + originalTextFor(nestedExpr('(', ')')))\
                        .setResultsName("checker", listAllMatches=True)
     checker = ("checker" + Suppress(":") + INDENT + OneOrMore(checker_function) + UNDENT)
 
@@ -246,7 +246,7 @@ class BibFieldParser(object):
     """Dictionary containing all the rules needed to create and validate json fields"""
 
     _legacy_field_matchings = {}
-    """Dictionary containing matching between the legacy master format and the current json"""
+    """Dictionary containing matching between the legacy main format and the current json"""
 
     def __init__(self,
                  base_dir=CFG_ETCDIR + '/bibfield',
@@ -351,8 +351,8 @@ class BibFieldParser(object):
                     extend: True/False,
                     aliases: [],
                     persistent_identifier: num/None,
-                    rules: {'master_format_1': [{rule1}, {rule2}, ...],
-                            'master_format_2': [....],
+                    rules: {'main_format_1': [{rule1}, {rule2}, ...],
+                            'main_format_2': [....],
                              ......
                             'calculated': [....],
                             'derived': [...]}
@@ -365,9 +365,9 @@ class BibFieldParser(object):
              'parse_first'         : (parse_first_json_ids),
              'depends_on'          : (depends_on_json_id),
              'only_if'             : (only_if_boolean_expressions),
-             'only_if_master_value': (only_if_master_value_boolean_expressions),
+             'only_if_main_value': (only_if_main_value_boolean_expressions),
              'memoize'             : time,
-             'value'               : value coming from master format
+             'value'               : value coming from main format
             }
 
         """
@@ -427,7 +427,7 @@ class BibFieldParser(object):
             if source not in rules:
                 #Allow several tags point to the same json id
                 rules[source] = []
-            (depends_on, only_if, only_if_master_value,
+            (depends_on, only_if, only_if_main_value,
              parse_first, memoize) = self.__create_decorators_content(r)
             self._create_legacy_rules(r.legacy, json_id, source)
 
@@ -435,7 +435,7 @@ class BibFieldParser(object):
                                   'parse_first'         : parse_first,
                                   'depends_on'          : depends_on,
                                   'only_if'             : only_if,
-                                  'only_if_master_value': only_if_master_value,
+                                  'only_if_main_value': only_if_main_value,
                                   'memoize'             : memoize,
                                   'value'               : compile(r.value[0].strip(), '', 'eval'),
                                  })
@@ -508,15 +508,15 @@ class BibFieldParser(object):
         checkers = []
         for checker in rule.checker:
 
-            if checker.master_format:
-                master_format = eval(rule.master_format)
+            if checker.main_format:
+                main_format = eval(rule.main_format)
                 checker_function_name = checker[1]
                 arguments = checker[2][1:-1]
             else:
-                master_format = ('all',)
+                main_format = ('all',)
                 checker_function_name = checker[0]
                 arguments = checker[1][1:-1]
-            checkers.append((master_format, checker_function_name, arguments))
+            checkers.append((main_format, checker_function_name, arguments))
 
         self.__class__._field_definitions[json_id]['checker'] = checkers
 
@@ -551,14 +551,14 @@ class BibFieldParser(object):
         """
         Extracts from the rule all the possible decorators.
         """
-        depends_on = only_if = only_if_master_value = parse_first = memoize = None
+        depends_on = only_if = only_if_main_value = parse_first = memoize = None
 
         if rule.depends_on:
             depends_on = rule.depends_on[0]
         if rule.only_if:
             only_if = rule.only_if[0]
-        if rule.only_if_master_value:
-            only_if_master_value = rule.only_if_master_value[0]
+        if rule.only_if_main_value:
+            only_if_main_value = rule.only_if_main_value[0]
         if rule.parse_first:
             parse_first = rule.parse_first[0]
         if rule.memoize:
@@ -567,7 +567,7 @@ class BibFieldParser(object):
             except IndexError:
                 memoize = 300 # FIXME: Default value will be used
 
-        return (depends_on, only_if, only_if_master_value, parse_first, memoize)
+        return (depends_on, only_if, only_if_main_value, parse_first, memoize)
 
     def __resolve_inherit_rules(self):
         """
@@ -619,7 +619,7 @@ class BibFieldParser(object):
             self._create_rule(rule, extend=True)
 
 
-def guess_legacy_field_names(fields, master_format):
+def guess_legacy_field_names(fields, main_format):
     """
     Using the legacy rules written in the config file (@legacy) tries to find
     the equivalent json field for one or more legacy fields.
@@ -632,7 +632,7 @@ def guess_legacy_field_names(fields, master_format):
         fields = (fields, )
     for field in fields:
         try:
-            res[field] = BibFieldParser.legacy_field_matchings()[master_format].get(field, [])
+            res[field] = BibFieldParser.legacy_field_matchings()[main_format].get(field, [])
         except:
             res[field] = []
     return res

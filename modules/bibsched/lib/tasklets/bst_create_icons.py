@@ -48,9 +48,9 @@ def create_icons_for_record(recid, icon_sizes, icon_format_mappings=None,
        @param icon_sizes: the list of icon sizes that need to be
        generated. Note that upscaled is not allowed
        @type icon_sizes: list
-       @param icon_format_mappings: defines for each "master" format in
+       @param icon_format_mappings: defines for each "main" format in
                                    which format the icons should be
-                                   created. If the master format is
+                                   created. If the main format is
                                    not specified here, then its icons
                                    will be created in the same format,
                                    if possible (for eg. the icons of a
@@ -157,9 +157,9 @@ def bst_create_icons(recid, icon_sizes, icon_format_mappings=None,
        @param collection: the collection name on which to run the task;
                           if recid is defined, collection will be ignored
        @type collection: string
-       @param icon_format_mappings: defines for each "master" format in
+       @param icon_format_mappings: defines for each "main" format in
                                    which format the icons should be
-                                   created. If the master format is
+                                   created. If the main format is
                                    not specified here, then its icons
                                    will be created in the same format,
                                    if possible (for eg. the icons of a
@@ -168,7 +168,7 @@ def bst_create_icons(recid, icon_sizes, icon_format_mappings=None,
                                    would be created in JPG) and unless
                                    a default mapping is not provided in
                                    C{CFG_ICON_CREATION_FORMAT_MAPPINGS}.
-                                   Use syntax masterextension-targetextension1,targetextension2
+                                   Use syntax mainextension-targetextension1,targetextension2
                                    (eg. "doc->png,jpg" or "png-jpg")
                                    Use '*' to target extensions not
                                    matched by other rules (if

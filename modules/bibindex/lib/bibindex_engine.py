@@ -1493,7 +1493,7 @@ class WordTable(AbstractIndexTable):
            of nonMarc type"""
         marc = range(recID1, recID2 + 1)
         nonmarc = []
-        query = """SELECT id FROM %s WHERE master_format <> 'marc'
+        query = """SELECT id FROM %s WHERE main_format <> 'marc'
                    AND id BETWEEN %%s AND %%s""" % "bibrec"
         res = run_sql(query, (recID1, recID2))
         if res:

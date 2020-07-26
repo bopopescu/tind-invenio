@@ -61,7 +61,7 @@ CFG_BIBFIELD_READERS = PluginContainer(os.path.join(CFG_PYLIBDIR, 'invenio',
 
 
 
-def create_record(blob, master_format='marc', verbose=0, **additional_info):
+def create_record(blob, main_format='marc', verbose=0, **additional_info):
     """
     Creates a record object from the blob description using the apropiate reader
     for it.
@@ -69,12 +69,12 @@ def create_record(blob, master_format='marc', verbose=0, **additional_info):
     @return Record object
     """
 
-    reader = CFG_BIBFIELD_READERS['bibfield_%sreader.py' % (master_format,)](blob, **additional_info)
+    reader = CFG_BIBFIELD_READERS['bibfield_%sreader.py' % (main_format,)](blob, **additional_info)
 
     return Record(reader.translate())
 
 
-def create_records(blob, master_format='marc', verbose=0, **additional_info):
+def create_records(blob, main_format='marc', verbose=0, **additional_info):
     """
     Creates a list of records from the blod descriptions using the split_records
     function to divide then.
@@ -83,9 +83,9 @@ def create_records(blob, master_format='marc', verbose=0, **additional_info):
 
     @return List of record objects initiated by the functions create_record()
     """
-    record_blods = CFG_BIBFIELD_READERS['bibfield_%sreader.py' % (master_format,)].split_blob(blob, additional_info.get('schema', None))
+    record_blods = CFG_BIBFIELD_READERS['bibfield_%sreader.py' % (main_format,)].split_blob(blob, additional_info.get('schema', None))
 
-    return [create_record(record_blob, master_format, verbose=verbose, **additional_info) for record_blob in record_blods]
+    return [create_record(record_blob, main_format, verbose=verbose, **additional_info) for record_blob in record_blods]
 
 
 def get_record(recid, reset_cache=False):
@@ -113,18 +113,18 @@ def get_record(recid, reset_cache=False):
     #Then retrieve information and blob
     if not record or reset_cache:
         try:
-            master_format = run_sql("SELECT master_format FROM bibrec WHERE id=%s", (recid,))[0][0]
+            main_format = run_sql("SELECT main_format FROM bibrec WHERE id=%s", (recid,))[0][0]
         except:
             return None
         schema = 'xml'
-        master_format = 'marc'
+        main_format = 'marc'
         try:
             from invenio.search_engine import print_record
             blob = print_record(recid, format='xm')
         except:
             return None
 
-        reader = CFG_BIBFIELD_READERS['bibfield_%sreader.py' % (master_format,)](blob, schema=schema)
+        reader = CFG_BIBFIELD_READERS['bibfield_%sreader.py' % (main_format,)](blob, schema=schema)
         record = Record(reader.translate())
         #Update bibfmt for future uses
         run_sql("REPLACE INTO bibfmt(id_bibrec, format, last_updated, value) VALUES (%s, 'recjson', NOW(), %s)",

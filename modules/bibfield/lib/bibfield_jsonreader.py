@@ -24,14 +24,14 @@ from invenio.bibfield_reader import Reader
 class JsonReader(Reader):
     """Default reader"""
 
-    __master_format__ = 'json'
+    __main_format__ = 'json'
 
     def __init__(self, blob, **kwargs):
         """
         :param blob:
         """
         super(JsonReader, self).__init__(blob=blob, **kwargs)
-        self._additional_info['master_format'] = 'json'
+        self._additional_info['main_format'] = 'json'
 
     @staticmethod
     def split_blob(blob, schema=None, **kwargs):

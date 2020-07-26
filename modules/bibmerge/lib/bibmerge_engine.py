@@ -154,7 +154,7 @@ def perform_request_record(requestType, uid, data):
     if requestType == 'submit':
         if data.has_key('duplicate'):
             recid2 = data['duplicate']
-            record2 = _get_record_slave(recid2, result, 'recid', uid)
+            record2 = _get_record_subordinate(recid2, result, 'recid', uid)
             if result['resultCode'] != 0: #return in case of error
                 return result
             (errcode, message) = check_doi_status_after_merge(data["recID1"], data['duplicate'],
@@ -170,7 +170,7 @@ def perform_request_record(requestType, uid, data):
             record_add_field(record2, '980', ' ', ' ', '', [('c', 'DELETED')])
             # mark record2 as duplicate of record1
             record_add_field(record2, '970', ' ', ' ', '', [('d', str(recid1))])
-            # add recid of deleted record to master record
+            # add recid of deleted record to main record
             record_add_field(record1, '981', ' ', ' ', '', [('a', str(recid2))])
 
             # To ensure updates happen in order, use a seq id
@@ -218,7 +218,7 @@ def perform_request_record(requestType, uid, data):
 
     recid2 = data["recID2"]
     mode = data['record2Mode']
-    record2 = _get_record_slave(recid2, result, mode, uid)
+    record2 = _get_record_subordinate(recid2, result, mode, uid)
     if result['resultCode'] != 0: #if record not accessible return error information
         return result
 
@@ -269,7 +269,7 @@ def perform_request_update_record(requestType, uid, data):
     redo_list = []
 
     mode = data['record2Mode']
-    record2 = _get_record_slave(recid2, result, mode, uid)
+    record2 = _get_record_subordinate(recid2, result, mode, uid)
     if result['resultCode'] != 0: #if record not accessible return error information
         return result
 
@@ -350,7 +350,7 @@ def perform_small_request_update_record(requestType, uid, data):
     disabled_hp_changes = cache_content[4]
 
     mode = data['record2Mode']
-    record2 = _get_record_slave(recid2, result, mode, uid)
+    record2 = _get_record_subordinate(recid2, result, mode, uid)
     if result['resultCode'] != 0: #if record not accessible return error information
         return result
 
@@ -413,7 +413,7 @@ def _get_record(recid, uid, result, fresh_record=False):
         result['resultCode'], result['resultText'], result['cacheDirty'], result['cacheMTime'] = 0, 'Record OK', cache_dirty, mtime
     return record
 
-def _get_record_slave(recid, result, mode=None, uid=None):
+def _get_record_subordinate(recid, result, mode=None, uid=None):
     """Check if record exists and return it in dictionary format.
        If any kind of error occurs returns None.
        If mode=='revision' then recid parameter is considered as revid."""
@@ -501,13 +501,13 @@ def check_doi_status_after_merge(original_recid1, original_recid2, final_record1
     by the system, and that not duplicate DOI would be
     created. Returns a tuple(error_code, message).
 
-    @param original_recid1: the record ID of the original record 1 (master)
+    @param original_recid1: the record ID of the original record 1 (main)
     @type original_recid1: int
-    @param original_recid2: the record ID of the original record 2 (slave)
+    @param original_recid2: the record ID of the original record 2 (subordinate)
     @type original_recid2: int
     @param final_record1: the resulting merged record
     @type final_record1: BibRecord object
-    @param final_record_2: the resulting slave "merged" record (optional when record2_marked_as_duplicate_p is False)
+    @param final_record_2: the resulting subordinate "merged" record (optional when record2_marked_as_duplicate_p is False)
     @type final_record_2: BibRecord object
     @param record2_marked_as_duplicate_p: True if the record 2 will be marked as duplicate (and deleted)
     @type record2_marked_as_duplicate_p: bool
@@ -522,7 +522,7 @@ def check_doi_status_after_merge(original_recid1, original_recid2, final_record1
                                              internal_only_p=True)
     original_record2_dois = get_dois(create_record(print_record(original_recid2, 'xm'))[0])
 
-    # Are there any DOI from record 1 (master) lost in the merging?
+    # Are there any DOI from record 1 (main) lost in the merging?
     lost_dois_in_record1 = [doi for doi in original_record1_managed_dois \
                             if not doi in new_record1_managed_dois]
 
@@ -534,7 +534,7 @@ def check_doi_status_after_merge(original_recid1, original_recid2, final_record1
         new_record2_managed_dois = get_dois(final_record_2, internal_only_p=True)
         original_record2_managed_dois = get_dois(create_record(print_record(original_recid2, 'xm'))[0],
                                                  internal_only_p=True)
-        # Are there any DOI from record 2 (slave) lost in the merging?
+        # Are there any DOI from record 2 (subordinate) lost in the merging?
         lost_dois_in_record2 = [doi for doi in original_record2_managed_dois \
                                     if not doi in new_record1_managed_dois]
     else:
